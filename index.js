@@ -5,11 +5,21 @@ var rp = require('request-promise');
 var cheerio = require('cheerio');
 var Table = require('cli-table');
 var numeral = require('numeral');
+var ora = require('ora');
+var chalk = require('chalk');
+var logUpdate = require('log-update');
 
 var baseUrl = 'https://my.smartfren.com/api/device/profile.php';
 var deviceType = 'Router';
 var swVersion = 'Andromax.M2S.V10_L_V2.3';
 var browser = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36';
+
+var spinner = ora();
+var table = new Table();
+
+setInterval(function() {
+    logUpdate('\n\n  ' + spinner.frame() + '\n');
+}, 50);
 
 var options = {
     method: 'POST',
@@ -34,14 +44,14 @@ rp(options)
     kuota = kuota.split(' ')[0];
     kuota = numeral(kuota).format('0,0').toString().concat(' KB');
 
-    var table = new Table();
 
     table.push(['Nomor', nomor]);
     table.push(['Paket', paket]);
     table.push(['Berlaku', berlaku]);
     table.push(['Kuota', kuota]);
 
-    console.log(table.toString());
+    logUpdate(table.toString());
+    process.exit();
 })
 .catch(function (err) {
     console.log(err);
