@@ -41,9 +41,6 @@ rp(options)
     var paket = $(infoTable).find('tr').eq(2).find('td').eq(2).text();
     var berlaku = $(infoTable).find('tr').eq(3).find('td').eq(2).text();
     var kuota = $(infoTable).find('tr').eq(4).find('td').eq(2).text();
-    kuota = kuota.split(' ')[0];
-    kuota = numeral(kuota).format('0,0').toString().concat(' KB');
-
 
     table.push(['Nomor', nomor]);
     table.push(['Paket', paket]);
