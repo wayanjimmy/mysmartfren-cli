@@ -9,7 +9,7 @@ npm i -g mysmartfren-cli
 mysmartfren-cli
 ```
 
-![ss](http://i.giphy.com/3oz8xRZIQDUIkhvz7G.gif)
+![ss](http://i.giphy.com/3oz8xxdlD3iT9NAQ2A.gif)
 
 ## License
 
