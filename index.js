@@ -1,55 +1,100 @@
 #!/usr/bin/env node
-'use strict';
+const rp = require('request-promise')
+const cheerio = require('cheerio')
+const Table = require('cli-table')
+const numeral = require('numeral')
+const ora = require('ora')
+const chalk = require('chalk')
+const logUpdate = require('log-update')
+const fs = require('fs')
+const clc = require('cli-color')
+const _ = require('lodash')
 
-var rp = require('request-promise');
-var cheerio = require('cheerio');
-var Table = require('cli-table');
-var numeral = require('numeral');
-var ora = require('ora');
-var chalk = require('chalk');
-var logUpdate = require('log-update');
+const baseUrl = 'https://my.smartfren.com/api/device/profile.php'
+const homedir = (process.platform === 'win32') ? process.env.HOMEPATH : process.env.HOME;
+const smartfile = homedir + '/.mysmartfren';
 
-var baseUrl = 'https://my.smartfren.com/api/device/profile.php';
-var deviceType = 'Router';
-var swVersion = 'Andromax.M2S.V10_L_V2.3';
-var browser = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36';
+let spinner = ora()
+let table = new Table()
+let yellow = clc.yellow
+let blue = clc.blue
+let cyan = clc.cyan
+let magenta = clc.magenta
 
-var spinner = ora();
-var table = new Table();
+const setConfigFile = (imsi, token) => {
+  fs.writeFile(smartfile, imsi + '|' + token, err => {
+    if (err) throw err
+    console.log(cyan('Config disimpan.'))
+  })
+}
 
-setInterval(function() {
+const fileError = () => {
+  console.log('  ')
+  console.log(cyan('IMSI dan TOKEN belum dikonfigurasi'))
+  console.log(cyan("Contoh: ") + magenta("mysmartfren-cli -imsi 'imsi' -token 'token'"))
+  console.log(' ')
+  process.exit(code=0)
+}
+
+const readConfigFile = () => {
+  let config;
+  try {
+    config = fs.readFileSync(smartfile, 'utf8')
+  } catch (el) {
+    fileError()
+  }
+
+  if (config === '') {
+    fileError()
+  }
+  return fs.readFileSync(smartfile, 'utf8')
+}
+
+const details = () => {
+  let config = readConfigFile().split('|')
+
+  setInterval(() => {
     logUpdate('\n\n  ' + spinner.frame() + '\n');
-}, 50);
+  }, 50);
 
-var options = {
+  let options = {
     method: 'POST',
     uri: baseUrl,
     form: {
-        imsi: process.env.SMARTFREN_IMSI,
-        token: process.env.SMARTFREN_TOKEN,
-        device_type: deviceType,
-        sw_version: swVersion,
-        browser: browser
+      imsi: config[0],
+      token: config[1]
     }
-};
+  }
 
-rp(options)
-.then(function (body) {
-    var $ = cheerio.load(body);
-    var infoTable = $('table').eq(1);
-    var nomor = $(infoTable).find('tr').eq(0).find('td').eq(2).text();
-    var paket = $(infoTable).find('tr').eq(2).find('td').eq(2).text();
-    var berlaku = $(infoTable).find('tr').eq(3).find('td').eq(2).text();
-    var kuota = $(infoTable).find('tr').eq(4).find('td').eq(2).text();
+  rp(options)
+  .then(function (body) {
+    let $ = cheerio.load(body)
+    let infoTable = $('table').eq(1)
+    let nomor = $(infoTable).find('tr').eq(0).find('td').eq(2).text()
+    let paket = $(infoTable).find('tr').eq(2).find('td').eq(2).text()
+    let berlaku = $(infoTable).find('tr').eq(3).find('td').eq(2).text()
+    let kuota = $(infoTable).find('tr').eq(4).find('td').eq(2).text()
 
-    table.push(['Nomor', nomor]);
-    table.push(['Paket', paket]);
-    table.push(['Berlaku', berlaku]);
-    table.push(['Kuota', kuota]);
+    table.push(['Nomor', nomor])
+    table.push(['Paket', paket])
+    table.push(['Berlaku', berlaku])
+    table.push(['Kuota', kuota])
 
-    logUpdate(table.toString());
-    process.exit();
-})
-.catch(function (err) {
-    console.log(err);
-});
+    logUpdate(table.toString())
+    process.exit()
+  })
+  .catch(function (err) {
+    console.log(err)
+  })
+}
+
+if (process.argv.length == 2) {
+  details()
+} else {
+  let args = _.chain(process.argv).filter((val, index) => index > 1).chunk(2)
+  let imsi = _.chain(args).filter(val => val[0] == '-imsi').flatten().value()[1]
+  let token = _.chain(args).filter(val => val[0] == '-token').flatten().value()[1]
+
+  setConfigFile(imsi, token)
+}
+
