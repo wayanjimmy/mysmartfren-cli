@@ -11,7 +11,7 @@
     "cli"
   ],
   "engines": {
-    "node": ">=4.0"
+    "node": ">=6.5"
   },
   "author": "wayanjimmy",
   "license": "MIT",
