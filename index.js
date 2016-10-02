@@ -3,9 +3,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const Table = require('cli-table');
-const numeral = require('numeral');
 const ora = require('ora');
-const chalk = require('chalk');
 const logUpdate = require('log-update');
 const fs = require('fs');
 const clc = require('cli-color');
@@ -17,8 +15,6 @@ const smartfile = homedir + '/.mysmartfren';
 
 let spinner = ora();
 let table = new Table();
-let yellow = clc.yellow;
-let blue = clc.blue;
 let cyan = clc.cyan;
 let magenta = clc.magenta;
 
@@ -32,9 +28,9 @@ const setConfigFile = (imsi, token) => {
 const fileError = () => {
   console.log('  ');
   console.log(cyan('IMSI dan TOKEN belum dikonfigurasi'));
-  console.log(cyan("Contoh: ") + magenta("mysmartfren-cli -imsi 'imsi' -token 'token'"));
+  console.log(cyan('Contoh: ') + magenta('mysmartfren-cli -imsi \'imsi\' -token \'token\''));
   console.log(' ');
-  process.exit(code=0);
+  process.exit(0);
 };
 
 const readConfigFile = () => {
@@ -96,8 +92,8 @@ const details = () => {
   })
   .catch(function (err) {
     console.log(err);
-  })
-}
+  });
+};
 
 if (process.argv.length == 2) {
   details();
